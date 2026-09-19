@@ -1,8 +1,0 @@
-{
-  "crons": [
-    {
-      "path": "/api/admin/process-strikes",
-      "schedule": "0 0 * * *"
-    }
-  ]
-}

@@ -1,8 +1,19 @@
 {
-  "name": "NOBEDevOps Dev",
-  "dockerComposeFile": "docker-compose.yml",
-  "service": "app",
-  "workspaceFolder": "/workspaces/NOBEDevOps",
+  "name": "Membership Management Dev Environment",
+  "dockerComposeFile": "../docker-compose.yml",
+  "service": "web",
+  "workspaceFolder": "/app",
   "forwardPorts": [3000],
-  "postCreateCommand": "sh -lc 'if [ -f package-lock.json ]; then npm ci; else npm install; fi'"
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "sh"
+      },
+      "extensions": [
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "bradlc.vscode-tailwindcss"
+      ]
+    }
+  }
 }

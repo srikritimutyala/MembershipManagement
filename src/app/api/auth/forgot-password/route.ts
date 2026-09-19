@@ -33,13 +33,11 @@ export async function POST(req: NextRequest) {
 
     const firstName = person?.first_name || (person?.name ? person.name.split(' ')[0] : null) || 'there';
 
-    // 2. Determine origin (defaults to public production domain)
+    // 2. Determine origin (defaults to local site URL for testing)
     const origin =
       process.env.NEXT_PUBLIC_SITE_URL ||
       process.env.SITE_URL ||
-      (process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : null) ||
-      (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null) ||
-      'https://nobe-dev-ops.vercel.app';
+      'http://localhost:3000';
 
     // 3. Generate password recovery link from Supabase Auth Admin
     const { data: linkData, error: linkError } = await supabaseAdmin.auth.admin.generateLink({

@@ -196,13 +196,13 @@ export default function EventList() {
           'name, first_name, last_name, year, college, major, committee, social_points, professional_points, service_points, strikes, auth_id'
         )
         .eq('auth_id', session.user.id)
-        .single();
+        .maybeSingle();
 
       if (fetchError) {
         setMemberError(fetchError.message);
         setMember(null);
         setStrikes([]);
-      } else {
+      } else if (data) {
         setMember(data as MemberProfile);
         setProfileForm({
           first_name: data.first_name ?? '',

@@ -1,6 +1,10 @@
-.git
 node_modules
-__pycache__
-.env
-dist
-build
+.next
+.git
+.gitignore
+.env*.local
+README.md
+*.log
+.DS_Store
+.vscode
+.idea

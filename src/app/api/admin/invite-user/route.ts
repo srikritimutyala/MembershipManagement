@@ -91,7 +91,7 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  const origin = req.headers.get('origin') ?? process.env.NEXT_PUBLIC_SITE_URL ?? (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'https://nobe-dev-ops.vercel.app');
+  const origin = req.headers.get('origin') ?? process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
   const loginUrl = `${origin}/users/login`;
 
 

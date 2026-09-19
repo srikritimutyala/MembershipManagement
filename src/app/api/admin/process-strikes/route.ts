@@ -4,11 +4,11 @@ import { createClient } from "@/app/utils/supabase/server";
 
 export async function POST(request: Request) {
   try {
-    // Check if this is an automated Vercel Cron Job
+    // Check if this is an automated scheduled Cron Job
     const authHeader = request.headers.get('authorization');
     const isCronJob = authHeader === `Bearer ${process.env.CRON_SECRET}`;
 
-    // If it's not a cron job, verifyn it's an admin user clicking the button
+    // If it's not a cron job, verify it's an admin user clicking the button
     if (!isCronJob) {
       const supabase = await createClient();
       const {
@@ -24,7 +24,7 @@ export async function POST(request: Request) {
         );
       }
     } else {
-        console.log("Process Strikes: Triggered automatically by Vercel Cron.");
+        console.log("Process Strikes: Triggered automatically by scheduled Cron.");
     }
 
     // Initialize Supabase admin client for batch updates

@@ -28,7 +28,14 @@ export async function GET() {
 
     return NextResponse.json({ events });
   } catch (error: any) {
-    console.error('Error fetching Google events:', error);
-    return NextResponse.json({ error: error.message }, { status: error.message === 'Google Calendar not connected' ? 401 : 500 });
+    if (
+      error.message === 'Google Calendar not connected' ||
+      error.message?.includes('not connected') ||
+      error.message === 'User not authenticated'
+    ) {
+      return NextResponse.json({ events: [], connected: false });
+    }
+    console.error('Error fetching Google events:', error.message);
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

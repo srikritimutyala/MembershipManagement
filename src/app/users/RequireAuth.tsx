@@ -10,21 +10,22 @@ type Props = {
 };
 
 export default function RequireAuth({ children, requireAdmin = false }: Props) {
-  const { profile, loading } = useAuth();
+  const { profile, loading, user } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
     if (loading) return;
-    if (!profile) {
+    if (user && !profile) return; // Still resolving profile from People table
+    if (!user && !profile) {
       router.replace('/users/login');
       return;
     }
-    if (requireAdmin && profile.role !== 'ADMIN') {
+    if (requireAdmin && profile?.role !== 'ADMIN') {
       router.replace('/users/member');
     }
-  }, [loading, profile, requireAdmin, router]);
+  }, [loading, profile, user, requireAdmin, router]);
 
-  if (loading) {
+  if (loading || (user && !profile)) {
     return (
       <div className="app-shell">
         <div className="page-frame">

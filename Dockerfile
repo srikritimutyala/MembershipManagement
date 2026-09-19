@@ -1,80 +1,58 @@
-# syntax=docker/dockerfile:1.6
+# syntax=docker/dockerfile:1
 
-############################################
-# Golden Image: Next.js (TypeScript)
-# - Multi-stage build for small runtime image
-# - Reproducible installs
-# - Non-root runtime
-# - Works with Next.js standalone output
-############################################
-
-ARG NODE_VERSION=20.11.1
-
-############################
-# 1) deps: install deps
-############################
-FROM node:${NODE_VERSION}-alpine AS deps
+################################################################################
+# Stage 1: Base image
+################################################################################
+FROM node:20-alpine AS base
 WORKDIR /app
+RUN apk add --no-cache libc6-compat curl
 
-# OS deps often needed for native modules
-RUN apk add --no-cache libc6-compat
+################################################################################
+# Stage 2: Install dependencies
+################################################################################
+FROM base AS deps
+COPY package.json package-lock.json ./
+RUN npm ci
 
-# Copy only package files for better caching
-COPY package.json package-lock.json* ./
-
-# Reproducible install (npm)
-RUN if [ -f package-lock.json ]; then npm ci; else npm install; fi
-
-############################
-# 2) build: compile next app
-############################
-FROM node:${NODE_VERSION}-alpine AS build
-WORKDIR /app
-
-ENV NODE_ENV=production
-
-# Bring node_modules from deps stage
+################################################################################
+# Stage 3: Development environment (for local development with hot-reloading)
+################################################################################
+FROM base AS development
+ENV NODE_ENV=development
+ENV PORT=3000
 COPY --from=deps /app/node_modules ./node_modules
-COPY . /app
+COPY . .
 
-# Recommended: Next standalone output
-# Ensure next.config.js has: output: "standalone"
+EXPOSE 3000
+
+CMD ["npm", "run", "dev"]
+
+################################################################################
+# Stage 4: Production builder
+################################################################################
+FROM base AS builder
+ENV NODE_ENV=production
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
 RUN npm run build
 
-############################
-# 3) runner: minimal runtime
-############################
-FROM node:${NODE_VERSION}-alpine AS runner
-WORKDIR /app
-
+################################################################################
+# Stage 5: Production runner
+################################################################################
+FROM base AS runner
 ENV NODE_ENV=production
 ENV PORT=3000
 
-# Install git, bash, curl, libc6-compat (for glibc binaries), and ca-certificates
-RUN apk add --no-cache git bash curl libc6-compat ca-certificates
+RUN addgroup --system --gid 1001 nodejs && \
+    adduser --system --uid 1001 nextjs
 
-# Create a non-root user and set up a writable home directory
-RUN addgroup -S nextjs && adduser -S -h /home/nextjs nextjs -G nextjs && \
-    mkdir -p /home/nextjs && chown -R nextjs:nextjs /home/nextjs
-
-ENV HOME=/home/nextjs
-ENV PATH="/home/nextjs/.local/bin:${PATH}"
-
-# Set up git to trust the /app directory (fixes "dubious ownership" errors)
-RUN git config --system --add safe.directory /app
-
-# If using Next "standalone" output:
-COPY --from=build /app/public ./public
-COPY --from=build /app/.next/static ./.next/static
-COPY --from=build /app/.next/standalone ./
-
-# Ensure the nextjs user owns the files
-RUN chown -R nextjs:nextjs /app
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/.next ./.next
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/package.json ./package.json
 
 USER nextjs
 
 EXPOSE 3000
 
-# Next standalone server entrypoint:
-CMD ["sh", "-c", "if [ \"$NODE_ENV\" = \"development\" ]; then npm install && npm run dev; else node server.js; fi"]
-
+CMD ["npm", "start"]

@@ -1,20 +1,23 @@
-version: "3.9"
-
 services:
-  app:
+  web:
     build:
       context: .
-      dockerfile: Dockerfile
-    container_name: dev-env
-    volumes:
-      - .:/app
-      - /app/node_modules
-      - ~/.gemini/antigravity-cli:/home/nextjs/.gemini/antigravity-cli
-    working_dir: /app
-    tty: true
-    stdin_open: true
-    environment:
-      - NODE_ENV=development
+      target: development
+    container_name: membership-management-dev
     ports:
       - "3000:3000"
-
+    volumes:
+      # Mount project source code for live hot-reloading
+      - .:/app
+      # Anonymous volumes to isolate container Linux dependencies and build cache from host OS
+      - /app/node_modules
+      - /app/.next
+    env_file:
+      - .env.local
+    environment:
+      - NODE_ENV=development
+      - PORT=3000
+      - WATCHPACK_POLLING=true
+    stdin_open: true
+    tty: true
+    restart: unless-stopped

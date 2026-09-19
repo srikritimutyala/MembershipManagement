@@ -40,13 +40,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       .from('People')
       .select('id, name, role, auth_id')
       .eq('auth_id', authId)
-      .single();
+      .maybeSingle();
 
     if (error) {
       console.error('Could not fetch profile:', error.message);
       setProfile(null);
-    } else {
+    } else if (data) {
       setProfile(data as UserProfile);
+    } else {
+      setProfile(null);
     }
   }
 

@@ -93,7 +93,11 @@ export async function POST(req: NextRequest) {
     }
 
     if (isCustomCalendar && !process.env.GOOGLE_API_KEY) {
-      throw new Error('Missing GOOGLE_API_KEY for public calendar sync.');
+      return NextResponse.json({ success: true, synced: 0, message: 'Missing GOOGLE_API_KEY for public calendar sync.' });
+    }
+
+    if (!isCustomCalendar && !process.env.GOOGLE_REFRESH_TOKEN) {
+      return NextResponse.json({ success: true, synced: 0, message: 'Google Calendar integration not configured.' });
     }
 
     const calendar = google.calendar({

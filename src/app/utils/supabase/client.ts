@@ -15,7 +15,7 @@ export function createClient() {
 
   if (typeof window !== "undefined" && supabaseUrl.includes("placeholder")) {
     console.warn(
-      "[Supabase] Missing NEXT_PUBLIC_SUPABASE_URL environment variable. Please configure environment variables in your Vercel Project Settings."
+      "[Supabase] Missing NEXT_PUBLIC_SUPABASE_URL environment variable. Please configure environment variables in your .env.local file."
     );
   }
 
